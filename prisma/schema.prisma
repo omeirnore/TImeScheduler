@@ -1,0 +1,226 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Single-user app, but modeled with a User row for clean ownership of data
+// and a straightforward path to multi-user later if ever needed.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  commuteConfig      CommuteConfig?
+  timetableSlots     TimetableSlot[]
+  subjects           Subject[]
+  studyPlanEntries   StudyPlanEntry[]
+  studyPlanOverrides StudyPlanOverrideDay[]
+  habits             Habit[]
+  tasks              Task[]
+  goals              Goal[]
+}
+
+enum SlotType {
+  LECTURE
+  LAB
+  TUTORIAL
+  OTHER
+}
+
+// Weekly-recurring college timetable slot. dayOfWeek: 0 = Sunday ... 6 = Saturday.
+// Times are stored as minutes-since-midnight for simple interval arithmetic.
+model TimetableSlot {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  subject     String
+  room        String?
+  type        SlotType @default(LECTURE)
+
+  skips SlotSkip[]
+
+  @@index([userId, dayOfWeek])
+}
+
+// Marks one specific date's instance of a recurring slot as skipped
+// (holiday, cancelled lecture, exam-week adjustment, etc).
+model SlotSkip {
+  id     String        @id @default(cuid())
+  slotId String
+  slot   TimetableSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  date   String // "YYYY-MM-DD"
+  reason String?
+
+  @@unique([slotId, date])
+}
+
+// Commute + recovery buffer, carved out of every college day. One row per user.
+model CommuteConfig {
+  id                 String @id @default(cuid())
+  userId             String @unique
+  user               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toCollegeMinutes   Int    @default(30)
+  fromCollegeMinutes Int    @default(30)
+  restBufferMinutes  Int    @default(45)
+  // Bounds the scheduler is allowed to place study/habit blocks within.
+  wakeMinute         Int    @default(360) // 06:00
+  sleepMinute        Int    @default(1380) // 23:00
+}
+
+enum SubjectCategory {
+  COLLEGE
+  SELF_STUDY
+}
+
+model Subject {
+  id       String          @id @default(cuid())
+  userId   String
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  category SubjectCategory
+
+  studyPlanEntries StudyPlanEntry[]
+  overrideEntries  StudyPlanOverrideEntry[]
+
+  @@index([userId])
+}
+
+// Weekly study-plan template: which subjects to study on which day, and for how long.
+model StudyPlanEntry {
+  id              String  @id @default(cuid())
+  userId          String
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek       Int
+  subjectId       String
+  subject         Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  durationMinutes Int
+  orderIndex      Int     @default(0)
+
+  @@index([userId, dayOfWeek])
+}
+
+// A per-date override that fully replaces the weekly template's entries for that day.
+model StudyPlanOverrideDay {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   String // "YYYY-MM-DD"
+
+  entries StudyPlanOverrideEntry[]
+
+  @@unique([userId, date])
+}
+
+model StudyPlanOverrideEntry {
+  id              String               @id @default(cuid())
+  dayId           String
+  day             StudyPlanOverrideDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  subjectId       String
+  subject         Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  durationMinutes Int
+  orderIndex      Int                  @default(0)
+}
+
+enum HabitCategory {
+  GYM
+  READING
+  MEALS
+  PERSONAL_PROJECT
+  CUSTOM
+}
+
+// Recurring habit the auto-scheduler fills into remaining gaps.
+model Habit {
+  id                  String        @id @default(cuid())
+  userId              String
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String
+  category            HabitCategory
+  targetDays          String // JSON-encoded int[] (0=Sunday..6=Saturday)
+  preferredStartMinute Int?
+  preferredEndMinute   Int?
+  durationMinutes     Int
+  priority            Int           @default(0) // lower number = placed first
+  locked              Boolean       @default(false)
+  lockedStartMinute   Int?
+
+  logs HabitLog[]
+
+  @@index([userId])
+}
+
+// Tracks whether a habit was actually completed on a given date (for streaks).
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      String // "YYYY-MM-DD"
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
+}
+
+enum TaskCategory {
+  COLLEGE
+  SELF_STUDY
+  HEALTH
+  PERSONAL
+  ADMIN
+}
+
+enum TaskTerm {
+  SHORT_TERM
+  LONG_TERM
+}
+
+model Task {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  date              String // "YYYY-MM-DD" the task is scheduled/tracked against
+  estimatedMinutes  Int?
+  category          TaskCategory
+  term              TaskTerm     @default(SHORT_TERM)
+  completed         Boolean      @default(false)
+  completedAt       DateTime?
+  createdAt         DateTime     @default(now())
+
+  @@index([userId, date])
+}
+
+// Long-term goal with milestone-based progress tracking.
+model Goal {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  targetDate  String? // "YYYY-MM-DD"
+  createdAt   DateTime  @default(now())
+
+  milestones Milestone[]
+
+  @@index([userId])
+}
+
+model Milestone {
+  id         String  @id @default(cuid())
+  goalId     String
+  goal       Goal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title      String
+  completed  Boolean @default(false)
+  orderIndex Int     @default(0)
+}

@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --border: #e5e5e1;
+  --foreground: #18181b;
+  --muted-foreground: #6b7280;
+  --accent: #4338ca;
+  --accent-foreground: #ffffff;
+  --success: #0f766e;
+  --danger: #b91c1c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0b0d;
+    --surface: #16161a;
+    --border: #27272a;
+    --foreground: #e4e4e7;
+    --muted-foreground: #9ca3af;
+    --accent: #818cf8;
+    --accent-foreground: #16161a;
+    --success: #2dd4bf;
+    --danger: #f87171;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@utility field {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+}
