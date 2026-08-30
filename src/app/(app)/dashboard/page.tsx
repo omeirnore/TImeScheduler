@@ -2,13 +2,14 @@ import { requireUserId } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getDayContext } from "@/lib/scheduling/day-context";
 import { getStudyPlanForDate } from "@/lib/scheduling/study-plan-for-date";
-import { toDateKey, DAY_LABELS } from "@/lib/time";
+import { toDateKey, DAY_LABELS, getWeekRange } from "@/lib/time";
 import { DateNav } from "./date-nav";
 import { Timeline } from "./timeline";
 import { SkippedSlots } from "./skipped-slots";
 import { StudyPlanCard } from "./study-plan-card";
 import { AddTaskForm } from "./add-task-form";
 import { TaskList } from "./task-list";
+import { WeeklyProgress } from "./weekly-progress";
 
 function formatDateLabel(dateKey: string, dayOfWeek: number, todayKey: string): string {
   const dayName = DAY_LABELS[dayOfWeek];
@@ -28,14 +29,21 @@ export default async function DashboardPage({
   const todayKey = toDateKey(new Date());
   const dateKey = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayKey;
 
-  const [context, tasks, studyPlan, subjects] = await Promise.all([
+  const weekRange = getWeekRange(dateKey);
+
+  const [context, tasks, studyPlan, subjects, weekTasks] = await Promise.all([
     getDayContext(userId, dateKey),
     db.task.findMany({ where: { userId, date: dateKey }, orderBy: { createdAt: "asc" } }),
     getStudyPlanForDate(userId, dateKey),
     db.subject.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    db.task.findMany({
+      where: { userId, date: { gte: weekRange.start, lte: weekRange.end } },
+      select: { completed: true },
+    }),
   ]);
 
   const skippedSlots = context.allSlots.filter((s) => context.skippedSlotIds.has(s.id));
+  const weekCompleted = weekTasks.filter((t) => t.completed).length;
 
   return (
     <div className="space-y-8 pb-10">
@@ -69,6 +77,7 @@ export default async function DashboardPage({
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-foreground">Tasks</h2>
+        <WeeklyProgress completed={weekCompleted} total={weekTasks.length} />
         <AddTaskForm dateKey={dateKey} />
         <TaskList tasks={tasks} />
       </section>

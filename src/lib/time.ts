@@ -54,3 +54,24 @@ export function dateKeyToDayOfWeek(dateKey: string): number {
   const [y, m, d] = dateKey.split("-").map(Number);
   return new Date(y, m - 1, d).getDay();
 }
+
+/** "2026-08-30" -> "Aug 30, 2026" */
+export function formatDateKey(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/** Sunday-through-Saturday week (matching the app's 0=Sunday day-of-week convention) containing dateKey. */
+export function getWeekRange(dateKey: string): { start: string; end: string } {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  const start = new Date(date);
+  start.setDate(date.getDate() - date.getDay());
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return { start: toDateKey(start), end: toDateKey(end) };
+}
