@@ -7,22 +7,36 @@ daily task tracking, all on one clean daily view.
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
-- Prisma + SQLite (via the `@prisma/adapter-better-sqlite3` driver adapter)
+- Prisma + PostgreSQL (via the `@prisma/adapter-pg` driver adapter — works
+  with any standard Postgres host: Neon, Supabase, a local instance, etc.)
 - Single-user auth: bcrypt password hash + signed JWT session cookie (no
   third-party auth service)
 - Vitest for the scheduling engine's unit tests
 
 ## Getting started
 
+You need a Postgres database (local, or a free one from
+[Neon](https://neon.tech)/[Supabase](https://supabase.com)).
+
 ```bash
 npm install
-cp .env.example .env      # then edit AUTH_SECRET to a random value
+cp .env.example .env      # set DATABASE_URL to your Postgres connection string,
+                           # and AUTH_SECRET to a random value
 npx prisma migrate deploy
 npm run dev
 ```
 
 Open http://localhost:3000. The first visit walks you through one-time
 account setup (this app supports exactly one user).
+
+## Deploying
+
+The lean free path: push to GitHub, create a free
+[Neon](https://neon.tech) Postgres database, then import the repo on
+[Vercel](https://vercel.com) (Framework Preset: Next.js) and set the
+`DATABASE_URL` (your Neon connection string) and `AUTH_SECRET` environment
+variables in the Vercel project settings. Vercel redeploys automatically on
+every push to this branch.
 
 ## Scripts
 
@@ -44,5 +58,8 @@ account setup (this app supports exactly one user).
   underlying inputs (timetable, commute config, study plan, habits, and
   per-date skips/overrides) are stored; the day's timeline is recomputed on
   each view via `src/lib/scheduling/day-context.ts`.
-- **Database** lives at `prisma/dev.db` (SQLite), managed via Prisma
-  migrations in `prisma/migrations`.
+- **Database** is Postgres, managed via Prisma migrations in
+  `prisma/migrations`. The connection uses a plain `pg` pool adapter rather
+  than a provider-specific driver, so any standard Postgres host works —
+  including Neon's pooled connection string, which is what a serverless
+  deploy (Vercel) needs.
