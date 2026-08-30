@@ -10,6 +10,14 @@
   --accent-foreground: #ffffff;
   --success: #0f766e;
   --danger: #b91c1c;
+
+  /* Categorical chart palette (validated colorblind-safe order: blue, orange, aqua, yellow). */
+  --chart-college: #2a78d6;
+  --chart-habit: #eb6834;
+  --chart-study: #1baf7a;
+  --chart-rest: #eda100;
+  --chart-commute: #a1a1aa;
+  --chart-free: #d4d4d8;
 }
 
 @theme inline {
@@ -22,6 +30,12 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-chart-college: var(--chart-college);
+  --color-chart-habit: var(--chart-habit);
+  --color-chart-study: var(--chart-study);
+  --color-chart-rest: var(--chart-rest);
+  --color-chart-commute: var(--chart-commute);
+  --color-chart-free: var(--chart-free);
   --font-sans: var(--font-inter);
 }
 
@@ -36,6 +50,13 @@
     --accent-foreground: #16161a;
     --success: #2dd4bf;
     --danger: #f87171;
+
+    --chart-college: #3987e5;
+    --chart-habit: #d95926;
+    --chart-study: #199e70;
+    --chart-rest: #c98500;
+    --chart-commute: #52525b;
+    --chart-free: #3f3f46;
   }
 }
 

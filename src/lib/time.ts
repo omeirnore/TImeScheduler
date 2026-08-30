@@ -65,6 +65,11 @@ export function formatDateKey(dateKey: string): string {
   });
 }
 
+export function shiftDateKey(dateKey: string, deltaDays: number): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return toDateKey(new Date(y, m - 1, d + deltaDays));
+}
+
 /** Sunday-through-Saturday week (matching the app's 0=Sunday day-of-week convention) containing dateKey. */
 export function getWeekRange(dateKey: string): { start: string; end: string } {
   const [y, m, d] = dateKey.split("-").map(Number);
@@ -74,4 +79,13 @@ export function getWeekRange(dateKey: string): { start: string; end: string } {
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   return { start: toDateKey(start), end: toDateKey(end) };
+}
+
+/** The calendar month containing dateKey. */
+export function getMonthRange(dateKey: string): { start: string; end: string; dayCount: number } {
+  const [y, m] = dateKey.split("-").map(Number);
+  const start = new Date(y, m - 1, 1);
+  const end = new Date(y, m, 0); // day 0 of next month = last day of this month
+  const dayCount = end.getDate();
+  return { start: toDateKey(start), end: toDateKey(end), dayCount };
 }

@@ -2,8 +2,11 @@ import { requireUserId } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getDayContext } from "@/lib/scheduling/day-context";
 import { getStudyPlanForDate } from "@/lib/scheduling/study-plan-for-date";
+import { getWeeklyStudyProgress } from "@/lib/scheduling/weekly-study-progress";
+import { getTodayHabitStatus, getLoggedHabitIds } from "@/lib/habits/today-status";
 import { toDateKey, DAY_LABELS, getWeekRange } from "@/lib/time";
 import { DateNav } from "./date-nav";
+import { DashboardOverview } from "./overview";
 import { Timeline } from "./timeline";
 import { SkippedSlots } from "./skipped-slots";
 import { StudyPlanCard } from "./study-plan-card";
@@ -26,28 +29,63 @@ export default async function DashboardPage({
 }) {
   const userId = await requireUserId();
   const { date } = await searchParams;
-  const todayKey = toDateKey(new Date());
+  const now = new Date();
+  const todayKey = toDateKey(now);
   const dateKey = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayKey;
+  const nowMinute = now.getHours() * 60 + now.getMinutes();
 
   const weekRange = getWeekRange(dateKey);
 
-  const [context, tasks, studyPlan, subjects, weekTasks] = await Promise.all([
-    getDayContext(userId, dateKey),
-    db.task.findMany({ where: { userId, date: dateKey }, orderBy: { createdAt: "asc" } }),
-    getStudyPlanForDate(userId, dateKey),
-    db.subject.findMany({ where: { userId }, orderBy: { name: "asc" } }),
-    db.task.findMany({
-      where: { userId, date: { gte: weekRange.start, lte: weekRange.end } },
-      select: { completed: true },
-    }),
-  ]);
+  const [context, tasks, studyPlan, subjects, weekTasks, weeklyStudy, habitStatuses, todayTasks] =
+    await Promise.all([
+      getDayContext(userId, dateKey),
+      db.task.findMany({ where: { userId, date: dateKey }, orderBy: { createdAt: "asc" } }),
+      getStudyPlanForDate(userId, dateKey),
+      db.subject.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+      db.task.findMany({
+        where: { userId, date: { gte: weekRange.start, lte: weekRange.end } },
+        select: { completed: true },
+      }),
+      getWeeklyStudyProgress(userId, todayKey, nowMinute),
+      getTodayHabitStatus(userId, todayKey),
+      dateKey === todayKey
+        ? Promise.resolve(null)
+        : db.task.findMany({ where: { userId, date: todayKey }, select: { completed: true } }),
+    ]);
 
   const skippedSlots = context.allSlots.filter((s) => context.skippedSlotIds.has(s.id));
   const weekCompleted = weekTasks.filter((t) => t.completed).length;
 
+  const dailyTaskSource = todayTasks ?? tasks;
+  const dailyTasks = {
+    completed: dailyTaskSource.filter((t) => t.completed).length,
+    total: dailyTaskSource.length,
+  };
+
+  const habitBlockIds = context.result.blocks
+    .filter((b) => b.type === "HABIT" && b.sourceId)
+    .map((b) => b.sourceId as string);
+  const loggedHabitIds = await getLoggedHabitIds(habitBlockIds, dateKey);
+
+  const upcoming =
+    dateKey === todayKey
+      ? context.result.blocks
+          .filter((b) => b.type !== "FREE" && b.startMinute > nowMinute)
+          .sort((a, b) => a.startMinute - b.startMinute)
+          .slice(0, 3)
+      : [];
+
   return (
     <div className="space-y-8 pb-10">
       <DateNav dateKey={dateKey} label={formatDateLabel(dateKey, context.dayOfWeek, todayKey)} />
+
+      <DashboardOverview
+        todayKey={todayKey}
+        dailyTasks={dailyTasks}
+        weeklyStudy={weeklyStudy}
+        habitStatuses={habitStatuses}
+        upcoming={upcoming}
+      />
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -61,7 +99,7 @@ export default async function DashboardPage({
           )}
         </div>
         <SkippedSlots slots={skippedSlots} dateKey={dateKey} />
-        <Timeline blocks={context.result.blocks} dateKey={dateKey} />
+        <Timeline blocks={context.result.blocks} dateKey={dateKey} loggedHabitIds={loggedHabitIds} />
         {context.result.unscheduled.length > 0 && (
           <ul className="space-y-1 text-xs text-muted-foreground">
             {context.result.unscheduled.map((u) => (
