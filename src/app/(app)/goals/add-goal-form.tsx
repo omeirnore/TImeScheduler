@@ -19,7 +19,7 @@ export function AddGoalForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-3 rounded-xl border border-border bg-surface p-4"
+      className="card space-y-3 p-4"
     >
       <div className="flex flex-wrap gap-3">
         <label className="min-w-48 flex-1 space-y-1.5 text-sm">

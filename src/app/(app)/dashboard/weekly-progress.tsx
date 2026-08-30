@@ -4,7 +4,7 @@ export function WeeklyProgress({ completed, total }: { completed: number; total:
   const pct = Math.round((completed / total) * 100);
 
   return (
-    <div className="space-y-1 rounded-xl border border-border bg-surface p-3">
+    <div className="card space-y-1 p-3">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>This week: {completed} of {total} tasks done</span>
         <span>{pct}%</span>

@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { LogOut } from "lucide-react";
 import { NAV_ITEMS } from "./nav-items";
 import { logoutAction } from "@/lib/actions/auth";
+import { applyTheme, getStoredThemePreference } from "@/lib/theme";
 
 export function AppShell({
   userEmail,
@@ -14,6 +16,15 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      if (getStoredThemePreference() === "system") applyTheme("system");
+    };
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   return (
     <div className="flex min-h-screen w-full">

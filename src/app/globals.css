@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #f7f7f5;
   --surface: #ffffff;
@@ -39,31 +41,34 @@
   --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b0b0d;
-    --surface: #16161a;
-    --border: #27272a;
-    --foreground: #e4e4e7;
-    --muted-foreground: #9ca3af;
-    --accent: #818cf8;
-    --accent-foreground: #16161a;
-    --success: #2dd4bf;
-    --danger: #f87171;
+:root[data-theme="dark"] {
+  --background: #0b0b0d;
+  --surface: #16161a;
+  --border: #27272a;
+  --foreground: #e4e4e7;
+  --muted-foreground: #9ca3af;
+  --accent: #818cf8;
+  --accent-foreground: #16161a;
+  --success: #2dd4bf;
+  --danger: #f87171;
 
-    --chart-college: #3987e5;
-    --chart-habit: #d95926;
-    --chart-study: #199e70;
-    --chart-rest: #c98500;
-    --chart-commute: #52525b;
-    --chart-free: #3f3f46;
-  }
+  --chart-college: #3987e5;
+  --chart-habit: #d95926;
+  --chart-study: #199e70;
+  --chart-rest: #c98500;
+  --chart-commute: #52525b;
+  --chart-free: #3f3f46;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 @utility field {
@@ -78,4 +83,32 @@ body {
   &:focus {
     box-shadow: 0 0 0 2px var(--accent);
   }
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@utility animate-check-pop {
+  animation: check-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@utility card {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.04),
+    0 1px 3px 0 rgb(0 0 0 / 0.03);
 }

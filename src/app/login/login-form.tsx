@@ -9,7 +9,7 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-xl border border-border bg-surface p-6 shadow-sm">
+    <form action={formAction} className="card space-y-4 p-6">
       <div className="space-y-1.5">
         <label htmlFor="email" className="text-sm font-medium text-foreground">
           Email

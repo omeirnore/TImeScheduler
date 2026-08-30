@@ -51,13 +51,13 @@ export function Timeline({
               <button
                 type="submit"
                 aria-label={loggedHabitIds.has(block.sourceId) ? "Mark not done" : "Mark done"}
-                className={`flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                className={`flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors active:scale-95 ${
                   loggedHabitIds.has(block.sourceId)
                     ? "border-success bg-success text-white"
                     : "border-current/30 opacity-80 hover:opacity-100"
                 }`}
               >
-                {loggedHabitIds.has(block.sourceId) && <Check size={12} />}
+                {loggedHabitIds.has(block.sourceId) && <Check size={12} className="animate-check-pop" />}
                 {loggedHabitIds.has(block.sourceId) ? "Done" : "Mark done"}
               </button>
             </form>

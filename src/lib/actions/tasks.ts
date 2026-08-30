@@ -40,6 +40,8 @@ export async function addTaskAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
+  const count = await db.task.count({ where: { userId, date: parsed.data.date } });
+
   await db.task.create({
     data: {
       userId,
@@ -48,11 +50,30 @@ export async function addTaskAction(
       category: parsed.data.category,
       term: parsed.data.term,
       estimatedMinutes: parsed.data.estimatedMinutes,
+      orderIndex: count,
     },
   });
 
   revalidatePath("/dashboard");
   return {};
+}
+
+/** Persists a drag-and-drop reorder: taskIds in their new display order. */
+export async function reorderTasksAction(taskIds: string[]): Promise<void> {
+  const userId = await requireUserId();
+  const tasks = await db.task.findMany({
+    where: { id: { in: taskIds }, userId },
+    select: { id: true },
+  });
+  const ownedIds = new Set(tasks.map((t) => t.id));
+
+  await db.$transaction(
+    taskIds
+      .filter((id) => ownedIds.has(id))
+      .map((id, index) => db.task.update({ where: { id }, data: { orderIndex: index } }))
+  );
+
+  revalidatePath("/dashboard");
 }
 
 export async function toggleTaskCompletedAction(taskId: string): Promise<void> {

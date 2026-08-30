@@ -39,7 +39,7 @@ export default async function DashboardPage({
   const [context, tasks, studyPlan, subjects, weekTasks, weeklyStudy, habitStatuses, todayTasks] =
     await Promise.all([
       getDayContext(userId, dateKey),
-      db.task.findMany({ where: { userId, date: dateKey }, orderBy: { createdAt: "asc" } }),
+      db.task.findMany({ where: { userId, date: dateKey }, orderBy: { orderIndex: "asc" } }),
       getStudyPlanForDate(userId, dateKey),
       db.subject.findMany({ where: { userId }, orderBy: { name: "asc" } }),
       db.task.findMany({

@@ -36,7 +36,7 @@ export function AddHabitForm() {
       ref={formRef}
       action={formAction}
       onReset={() => setMode("FLEXIBLE")}
-      className="space-y-3 rounded-xl border border-border bg-surface p-4"
+      className="card space-y-3 p-4"
     >
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <label className="col-span-2 space-y-1.5 text-sm">

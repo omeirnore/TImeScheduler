@@ -19,7 +19,7 @@ export function StudyPlanCard({
   subjects: Subject[];
 }) {
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
+    <div className="card space-y-3 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">Study plan</h3>
         {studyPlan.isOverride ? (

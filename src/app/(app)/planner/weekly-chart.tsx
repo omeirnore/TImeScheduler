@@ -14,7 +14,7 @@ export function WeeklyChart({
   todayKey: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="card p-4">
       <div className="flex gap-3">
         {/* Y-axis hour gridlines */}
         <div className="relative shrink-0 text-xs text-muted-foreground" style={{ height: CHART_HEIGHT, width: 28 }}>

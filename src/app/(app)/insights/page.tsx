@@ -33,7 +33,7 @@ export default async function InsightsPage({
 
       <PeriodToggle period={resolvedPeriod} />
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard label="Hours studied" value={`${stats.studyHours}h`} />
         <StatCard
           label="Habit hit-rate"

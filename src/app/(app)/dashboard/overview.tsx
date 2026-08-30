@@ -27,7 +27,7 @@ export function DashboardOverview({
   if (!hasAnything) return null;
 
   return (
-    <section className="space-y-4 rounded-xl border border-border bg-surface p-4">
+    <section className="card space-y-4 p-4">
       <h2 className="text-sm font-semibold text-foreground">Am I on track?</h2>
 
       <div className="flex flex-wrap gap-6">
@@ -58,13 +58,13 @@ export function DashboardOverview({
                 <form action={toggleHabitLogAction.bind(null, h.habitId, todayKey)}>
                   <button
                     type="submit"
-                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
                       h.loggedToday
                         ? "border-success bg-success text-white"
                         : "border-border text-foreground hover:border-accent"
                     }`}
                   >
-                    {h.loggedToday ? <Check size={12} /> : null}
+                    {h.loggedToday ? <Check size={12} className="animate-check-pop" /> : null}
                     {h.name}
                     {h.streak > 0 && (
                       <span className="flex items-center gap-0.5 opacity-90">

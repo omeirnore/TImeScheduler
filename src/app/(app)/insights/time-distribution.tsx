@@ -18,7 +18,7 @@ export function TimeDistribution({ days }: { days: DayCategoryTotals[] }) {
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
+    <div className="card space-y-3 p-4">
       <h3 className="text-sm font-semibold text-foreground">Time distribution</h3>
       <div className="space-y-2.5">
         {totals

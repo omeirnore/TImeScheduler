@@ -9,6 +9,9 @@ import { AddStudyEntryForm } from "./add-study-entry-form";
 import { StudyPlanList } from "./study-plan-list";
 import { AddHabitForm } from "./add-habit-form";
 import { HabitsList } from "./habits-list";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ImportDataForm } from "./import-data-form";
+import { Download } from "lucide-react";
 
 export default async function SettingsPage() {
   const userId = await requireUserId();
@@ -33,6 +36,14 @@ export default async function SettingsPage() {
           Your timetable and commute preferences shape every day&apos;s schedule.
         </p>
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+          <p className="text-sm text-muted-foreground">Defaults to matching your system.</p>
+        </div>
+        <ThemeToggle />
+      </section>
 
       <section className="space-y-4">
         <div>
@@ -96,6 +107,24 @@ export default async function SettingsPage() {
         </div>
         <AddHabitForm />
         <HabitsList habits={habits} />
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Data</h2>
+          <p className="text-sm text-muted-foreground">
+            Back up everything to a file, or restore from one.
+          </p>
+        </div>
+        <a
+          href="/api/export"
+          download
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
+        >
+          <Download size={16} />
+          Export all data
+        </a>
+        <ImportDataForm />
       </section>
     </div>
   );

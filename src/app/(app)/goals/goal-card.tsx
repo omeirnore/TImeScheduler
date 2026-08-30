@@ -16,7 +16,7 @@ export function GoalCard({ goal }: { goal: GoalWithMilestones }) {
   const pct = total > 0 ? Math.round((completed / total) * 100) : null;
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
+    <div className="card space-y-3 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-semibold text-foreground">{goal.title}</h3>
@@ -62,22 +62,27 @@ export function GoalCard({ goal }: { goal: GoalWithMilestones }) {
       {total > 0 && (
         <ul className="space-y-1.5">
           {goal.milestones.map((milestone) => (
-            <li key={milestone.id} className="flex items-center gap-2 text-sm">
+            <li
+              key={milestone.id}
+              className={`flex items-center gap-2 text-sm transition-opacity ${
+                milestone.completed ? "opacity-70" : ""
+              }`}
+            >
               <form action={toggleMilestoneAction.bind(null, milestone.id)}>
                 <button
                   type="submit"
                   aria-label={milestone.completed ? "Mark incomplete" : "Mark complete"}
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors active:scale-90 ${
                     milestone.completed
                       ? "border-success bg-success text-white"
                       : "border-border hover:border-accent"
                   }`}
                 >
-                  {milestone.completed && <Check size={12} />}
+                  {milestone.completed && <Check size={12} className="animate-check-pop" />}
                 </button>
               </form>
               <span
-                className={`min-w-0 flex-1 truncate ${
+                className={`min-w-0 flex-1 truncate transition-colors ${
                   milestone.completed ? "text-muted-foreground line-through" : "text-foreground"
                 }`}
               >
